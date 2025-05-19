@@ -1,0 +1,4 @@
+VCD info: dumpfile saida.vcd opened for output.
+Erro no dado: dado esperado 05, dado recebido 04
+Erro no protocolo no: valid em nivel alto e ready em nivel baixo.
+tb.v:40: $finish called at 22000 (1ps)
