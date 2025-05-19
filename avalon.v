@@ -12,35 +12,36 @@ module avalon (
     parameter S_VALID_4     = 3'd2;
     parameter S_VALID_5     = 3'd3;
     parameter S_VALID_6     = 3'd4;
-    parameter S_HOLD        = 3'd5;
-    parameter S_DONE        = 3'd6;
+    parameter S_HOLD_5      = 3'd5;
+    parameter S_HOLD_6      = 3'd6;
+    parameter S_DONE        = 3'd7;
 
     reg [2:0] state;
     reg [2:0] next_state;
 
     // Armazena os dados
-    reg [7:0] dados[0:2];
-    reg [1:0] index;
+   //  reg [7:0] dados[0:2];
+   // reg [1:0] index;
 
     // Armazena ready anterior
-    reg ready_prev;
+   // reg ready_prev;
 
-    initial begin
-        dados[0] = 8'd4;
-        dados[1] = 8'd5;
-        dados[2] = 8'd6;
-    end
+  //  initial begin
+  //      dados[0] = 8'd4;
+  //      dados[1] = 8'd5;
+  //      dados[2] = 8'd6;
+  //  end
 
     // Lógica sequencial
     always @(posedge clk or negedge resetn) begin
         if (!resetn) begin
             state <= S_IDLE;
-            index <= 0;
-            valid <= 0;
-            data <= 8'd0;
-            ready_prev <= 0;
+         //   index <= 0;
+         //   valid <= 0;
+        //    data <= 8'd0;
+         //   ready_prev <= 0;
         end else begin
-            ready_prev <= ready;
+         //   ready_prev <= ready;
             state <= next_state;
         end
     end
@@ -51,45 +52,45 @@ module avalon (
         case (state)
             S_IDLE: begin
                 if (ready)
-                    next_state = S_WAIT_READY;
-            end
+                    next_state = S_VALID_4;
+          //  end
 
-            S_WAIT_READY: begin
-                next_state = S_VALID_4;
+         //   S_WAIT_READY: begin
+         //       next_state = S_VALID_4;
             end
 
             S_VALID_4: begin
                 if (ready)
                     next_state = S_VALID_5;
                 else
-                    next_state = S_HOLD;
+                    next_state = S_HOLD_5;
             end
 
             S_VALID_5: begin
                 if (ready)
                     next_state = S_VALID_6;
                 else
-                    next_state = S_HOLD;
+                    next_state = S_HOLD_6;
             end
 
             S_VALID_6: begin
-                if (ready)
-                    next_state = S_DONE;
-                else
-                    next_state = S_HOLD;
+                
+                next_state = S_DONE;
+                
             end
 
-            S_HOLD: begin
+            S_HOLD_5: begin
                 if (ready)
-                    case (index)
-                        1: next_state = S_VALID_5;
-                        2: next_state = S_VALID_6;
-                        default: next_state = S_DONE;
-                    endcase
+                    next_state = S_VALID_5;
                 else
-                    next_state = S_DONE; // só segura por 1 ciclo
+                    next_state = S_HOLD_5; // só segura por 1 ciclo
             end
-
+            S_HOLD_6: begin
+                if (ready)
+                    next_state = S_VALID_6;
+                else
+                    next_state = S_HOLD_6; // só segura por 1 ciclo
+            end
             S_DONE: begin
                 next_state = S_DONE;
             end
@@ -97,37 +98,39 @@ module avalon (
     end
 
     // Saída: Moore (baseada apenas no estado)
-    always @(posedge clk or negedge resetn) begin
-        if (!resetn) begin
-            valid <= 0;
-            data <= 8'd0;
-            index <= 0;
-        end else begin
-            case (next_state)
+    always @(*) begin
+      //  if (!resetn) begin
+      //      valid <= 0;
+      //      data <= 8'd0;
+      //      index <= 0;
+      //  end else begin
+            valid = 0;
+            case (state)
                 S_VALID_4: begin
-                    valid <= 1;
-                    data <= dados[0];
-                    index <= 1;
+                    valid = 1;
+                    data = 4;
+            //        index = 1;
                 end
                 S_VALID_5: begin
-                    valid <= 1;
-                    data <= dados[1];
-                    index <= 2;
+                    valid = 1;
+                    data = 5;
+            //        index = 2;
                 end
                 S_VALID_6: begin
-                    valid <= 1;
-                    data <= dados[2];
-                    index <= 3;
+                    valid = 1;
+                    data = 6;
+            //        index = 3;
                 end
-                S_HOLD: begin
-                    valid <= 1;
-                    data <= dados[index - 1];
-                end
+             //   S_HOLD: begin
+             //       valid = 1;
+             //       data = dados[index - 1];
+             //   end
                 default: begin
-                    valid <= 0;
+                    valid = 0;
                 end
             endcase
+
         end
-    end
+   // end
 
 endmodule
